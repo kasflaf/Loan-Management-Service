@@ -34,8 +34,8 @@ class Database extends Config
         'DBPrefix'     => '',
         'pConnect'     => false,
         'DBDebug'      => true,
-        'charset'      => 'utf8mb4',
-        'DBCollat'     => 'utf8mb4_general_ci',
+        'charset'      => 'utf8',
+        'DBCollat'     => 'utf8_general_ci',
         'swapPre'      => '',
         'encrypt'      => false,
         'compress'     => false,
@@ -197,5 +197,15 @@ class Database extends Config
         if (ENVIRONMENT === 'testing') {
             $this->defaultGroup = 'tests';
         }
+
+        // Get environment variables
+        $this->default['hostname'] = getenv('DB_HOST') ?: 'localhost';
+        $this->default['database'] = getenv('DB_DATABASE') ?: 'ci4';
+        $this->default['username'] = getenv('DB_USERNAME') ?: 'root';
+        $this->default['password'] = getenv('DB_PASSWORD') ?: '';
+        
+        // Other database settings
+        $this->default['DBDriver'] = 'Postgre';
+        $this->default['port'] = getenv('DB_PORT') ?: '';
     }
 }
