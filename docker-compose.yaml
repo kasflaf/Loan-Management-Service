@@ -5,6 +5,7 @@ services:
     container_name: ci4_php_fpm
     volumes:
       - ./Service:/var/www/html:z  # Bind mount your CI4 code to the container
+    user: "${UID}:${GID}"
     networks:
       - ci4_network
     environment:
@@ -18,7 +19,7 @@ services:
     ports:
       - "8080:8080"
     command: >
-      bash -c "apt-get update && apt-get install -y libicu-dev && apt-get install -y libpq-dev && docker-php-ext-install intl && docker-php-ext-install pgsql && php spark serve --host 0.0.0.0 --port 8080"
+      bash -c "apt-get update && apt-get install -y libicu-dev && apt-get install -y libpq-dev && docker-php-ext-install intl && docker-php-ext-install pgsql && php spark migrate && php spark serve --host 0.0.0.0 --port 8080"
   db:
     image: postgres:13
     container_name: ci4_postgres
