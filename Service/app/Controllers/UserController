@@ -1,0 +1,42 @@
+<?php
+namespace App\Controllers;
+
+use App\Models\UserModel;
+use CodeIgniter\RESTful\ResourceController;
+
+class UserController extends ResourceController
+{
+    protected $modelName = 'App\Models\UserModel'; // Specify the model
+    protected $format    = 'json'; // Set response format to JSON
+
+    /**
+     * Get user email by ID (Accepting JSON Request).
+     *
+     * @return \CodeIgniter\HTTP\Response
+     */
+    public function getEmailById()
+    {
+        // Parse JSON input from the request body
+        $input = $this->request->getJSON();
+
+        // Validate that the ID is provided
+        if (!isset($input->id)) {
+            return $this->failValidationError('The "id" field is required.');
+        }
+
+        // Fetch user by ID
+        $user = $this->model->find($input->id);
+
+        if ($user) {
+            // Return success response with email
+            return $this->respond([
+                'status' => 200,
+                'message' => 'User found.',
+                'data' => ['email' => $user['email']]
+            ]);
+        } else {
+            // Return error response if user not found
+            return $this->failNotFound('User not found.');
+        }
+    }
+}

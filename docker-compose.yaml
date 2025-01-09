@@ -14,12 +14,23 @@ services:
       - DB_DATABASE=${DB_DATABASE}
       - DB_USERNAME=${DB_USERNAME}
       - DB_PASSWORD=${DB_PASSWORD}
+      - JWT_SECRET_KEY=${JWT_SECRET_KEY}
     expose:
       - "8080"
     ports:
       - "8080:8080"
     command: >
-      bash -c "apt-get update && apt-get install -y libicu-dev && apt-get install -y libpq-dev && docker-php-ext-install intl && docker-php-ext-install pgsql && php spark migrate && php spark serve --host 0.0.0.0 --port 8080"
+      bash -c "apt-get update && 
+      apt-get install -y libicu-dev && 
+      apt-get install -y libpq-dev &&
+      apt-get install -y git && 
+      docker-php-ext-install intl && 
+      docker-php-ext-install pgsql &&
+      curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer &&
+      composer require firebase/php-jwt && 
+      php spark migrate && 
+      php spark serve --host 0.0.0.0 --port 8080"
+
   db:
     image: postgres:13
     container_name: ci4_postgres
