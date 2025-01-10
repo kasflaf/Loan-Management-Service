@@ -1,0 +1,2 @@
+# Run the command every day at midnight
+0 0 * * * /usr/local/bin/php /var/www/html/spark loan:update-statuses
