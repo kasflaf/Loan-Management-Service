@@ -7,8 +7,6 @@ use CodeIgniter\Router\RouteCollection;
  */
 // In app/Config/Routes.php
 
-$routes->post('/email', 'UserController::getEmailById');
-
 // Group routes for authentication
 $routes->group('auth', function ($routes) {
     $routes->post('register', 'AuthController::register');
@@ -20,14 +18,13 @@ $routes->group('auth', function ($routes) {
 
 // Loan-related routes
 $routes->group('loans', function ($routes) {
-    $routes->post('create', 'LoanController::create'); // Create a loan
+    $routes->post('create', 'LoanController::create', ['filter' => 'auth']); // Create a loan
     $routes->put('update-status', 'LoanController::updateAllLoanStatuses'); // Update overdue loans
-    $routes->put('return/(:num)', 'LoanController::returnBook/$1'); // Return a book
+    $routes->put('return/(:num)', 'LoanController::returnBook/$1', ['filter' => 'auth']); // Return a book
     $routes->get('user/(:num)', 'LoanController::getLoansByUser/$1'); // Get loans by user
     $routes->get('active/(:num)', 'LoanController::getActiveLoans/$1'); // Get active loans for user
-    $routes->delete('delete/(:num)', 'LoanController::deleteLoan/$1'); // Delete a loan
+    $routes->get('activeAll', 'LoanController::getAllActiveLoans'); // Get a loan
+    $routes->delete('delete/(:num)', 'LoanController::deleteLoan/$1', ['filter' => 'auth']); // Delete a loan
 });
 
-
-$routes->get('/testdb', 'TestController::checkDbConnection');
-$routes->get('/', 'Home::index');
+$routes->get('user/email/(:num)', 'EmailController::getEmail/$1');

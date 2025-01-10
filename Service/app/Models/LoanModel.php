@@ -27,17 +27,6 @@ class LoanModel extends Model
     protected $createdField = 'created_at';
     protected $updatedField = 'updated_at';
 
-    // Validation rules
-    protected $validationRules = [
-        'user_id'           => 'required|integer',
-        'book_id'           => 'required|max_length[255]',
-        'loan_start_date'   => 'required|valid_date',
-        'loan_due_date'     => 'required|valid_date',
-        'loan_returned_date'=> 'permit_empty|valid_date',
-        'status'            => 'required|in_list[active,overdue,returned]',
-        'penalty'           => 'permit_empty|decimal',
-    ];
-
     protected $validationMessages = [
         'user_id' => [
             'required' => 'User ID is required.',
@@ -66,8 +55,4 @@ class LoanModel extends Model
             'decimal' => 'Penalty must be a valid decimal number.',
         ],
     ];
-
-    // Soft deletes (optional)
-    protected $useSoftDeletes = true;
-    protected $deletedField = 'deleted_at';
 }

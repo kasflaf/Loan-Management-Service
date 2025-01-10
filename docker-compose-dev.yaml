@@ -1,9 +1,11 @@
 
 services:
   php_loan:
-    build:
-      dockerfile: Dockerfile
-    container_name: loan_service
+    image: php:8.1-fpm
+    container_name: ci4_php_fpm
+    volumes:
+      - ./Service:/var/www/html:z  # Bind mount your CI4 code to the container
+    user: "${UID}:${GID}"
     networks:
       - ci4_network
     environment:
@@ -31,18 +33,18 @@ services:
 
   db_loan:
     image: postgres:13
-    container_name: loan_db
+    container_name: ci4_postgres
     environment:
       POSTGRES_USER: ${DB_USERNAME}     # Use the DB_USERNAME from .env
       POSTGRES_PASSWORD: ${DB_PASSWORD} # Use the DB_PASSWORD from .env
       POSTGRES_DB: ${DB_DATABASE}       # Use the DB_DATABASE from .env
     volumes:
-      - loan_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
     networks:
       - ci4_network
     
 volumes:
-  loan_data:
+  postgres_data:
 
 networks:
   ci4_network:

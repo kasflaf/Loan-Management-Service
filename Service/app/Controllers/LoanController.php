@@ -17,40 +17,42 @@ class LoanController extends ResourceController
     // Create a new loan (POST /loans)
     public function create()
     {
-        /*{
-            "book_id": 1,
-            "loan_start_date": "2025-01-10",
-            "loan_due_date": "2025-01-20"
-        }*/
-
-
         // Get JSON data from the request body
-        $data = $this->request->getJSON(true); // The 'true' argument returns JSON as an associative array.
+        $requestData = $this->request->getJSON(true); // The 'true' argument returns JSON as an associative array.
+    
+        // Define the data structure explicitly
+        $data = [
+            'user_id' => $this->request->user['id'], // Get user ID from the request
+            'book_id' => $requestData['book_id'] ?? null, // Ensure book_id is set, or use null as a fallback
+            'loan_start_date' => $requestData['loan_start_date'] ?? date('Y-m-d'), // Use current date if not provided            
+            'loan_due_date' => $requestData['loan_due_date'] ?? null, // Ensure loan_due_date is set
+            'loan_returned_date' => null, // Defaults to null
+            'status' => 'active', // Default status
+            'penalty' => 0, // Defaults to null
+        ];
 
-        // Validation check
-        if (!$this->validate($this->loanModel->validationRules)) {
-            return $this->failValidationErrors($this->validator->getErrors());
-        }
+        // // print data as resoponse
+        // return $this->respond($data);
 
         // Check if the book is already borrowed (active or overdue status)
         $existingLoan = $this->loanModel
                             ->where('book_id', $data['book_id'])
                             ->whereIn('status', ['active', 'overdue'])
                             ->first();
-
+    
         if ($existingLoan) {
-            return $this->failConflict('This book is already borrowed and cannot be loaned again.');
+            return $this->failResourceExists('This book is already borrowed and cannot be loaned again.');
         }
-
-        // Default status for new loans
-        $data['status'] = 'active';
-        $data['user_id'] = $this->request->user['id']; // Get user ID from the request
-
+    
         // Save the new loan
-        $this->loanModel->save($data);
-
-        return $this->respondCreated(['message' => 'Loan successfully created.']);
+        if ($this->loanModel->save($data)) {
+            return $this->respondCreated(['message' => 'Loan successfully created.']);
+        }
+    
+        return $this->fail('Failed to create the loan.');
     }
+    
+    
 
 
     // Update loan statuses if overdue (PUT /loans/update-status)
@@ -84,10 +86,17 @@ class LoanController extends ResourceController
     // Return a book and update penalty (PUT /loans/return/{loan_id})
     public function returnBook($loan_id)
     {
+        // Get the loan record by ID
         $loan = $this->loanModel->find($loan_id);
 
+        // Check if the loan exists
         if (!$loan) {
             return $this->failNotFound('Loan not found.');
+        }
+
+        // Ensure the logged-in user is the one who borrowed the book
+        if ($loan['user_id'] !== $this->request->user['id']) {
+            return $this->failForbidden('You are not authorized to return this book.');
         }
 
         // Check if the book was already returned
@@ -111,8 +120,10 @@ class LoanController extends ResourceController
             'penalty' => $penalty,
         ];
 
+        // Update the loan in the database
         $this->loanModel->update($loan_id, $updatedData);
 
+        // Return a response indicating the book was returned and penalty updated
         return $this->respondUpdated(['message' => 'Book returned and penalty updated.']);
     }
 
@@ -155,5 +166,16 @@ class LoanController extends ResourceController
         $this->loanModel->delete($loan_id);
 
         return $this->respondDeleted(['message' => 'Loan successfully deleted.']);
+    }
+    // Get all active loans (GET /loans/active)
+    public function getAllActiveLoans()
+    {
+        $loans = $this->loanModel->where('status', 'active')->findAll();
+
+        if (!$loans) {
+            return $this->failNotFound('No active loans found.');
+        }
+
+        return $this->respond($loans);
     }
 }
