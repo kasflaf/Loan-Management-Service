@@ -35,6 +35,7 @@ class Filters extends BaseFilters
         'pagecache'     => PageCache::class,
         'performance'   => PerformanceMetrics::class,
         'auth' => \App\Filters\AuthFilter::class,
+        'cors' => \App\Filters\Cors::class,
     ];
 
     /**
@@ -70,6 +71,7 @@ class Filters extends BaseFilters
      */
     public array $globals = [
         'before' => [
+            'cors',
             // 'honeypot',
             // 'csrf',
             // 'invalidchars',
@@ -106,5 +108,9 @@ class Filters extends BaseFilters
      */
     public array $filters = [
         'auth' => ['before' => ['auth/logout', 'auth/delete']],
+        'cors' => [
+            'before' => ['api/*'],
+            'after'  => ['api/*'],
+        ],
     ];
 }
