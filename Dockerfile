@@ -17,12 +17,6 @@ RUN chown -R www-data:www-data /var/www/html/writable
 # Install cron and other required dependencies
 RUN apt-get update && apt-get install -y cron
 
-# Set the working directory
-WORKDIR /var/www/html
-
-# Copy application code
-COPY . /var/www/html
-
 # Copy cron job file to /etc/cron.d/
 COPY ./cronjob /etc/cron.d/loan-cron
 
